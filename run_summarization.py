@@ -184,6 +184,7 @@ def setup_training(model, batcher):
 def run_training(model, batcher, sess_context_manager, sv, summary_writer):
   """Repeatedly runs training iterations, logging loss to screen and writing summaries"""
   tf.logging.info("starting run_training")
+  iters = 0
   with sess_context_manager as sess:
     if FLAGS.debug: # start the tensorflow debugger
       sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -212,8 +213,12 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       train_step = results['global_step'] # we need this to update our running average loss
 
       summary_writer.add_summary(summaries, train_step) # write the summaries
-      if train_step % 10000 == 0: # flush the summary writer every so often
+      if train_step % 1000 == 0: # flush the summary writer every so often
         summary_writer.flush()
+        
+      iters += 1
+      if iters == 70000:
+        break
 
 
 def run_eval(model, batcher, vocab):
@@ -227,7 +232,7 @@ def run_eval(model, batcher, vocab):
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far
 
-  while batcher.next_batch():
+  while True:
     _ = util.load_ckpt(saver, sess) # load a new checkpoint
     batch = batcher.next_batch() # get the next batch
 
