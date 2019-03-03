@@ -32,16 +32,16 @@ from tensorflow.python import debug as tf_debug
 FLAGS = tf.app.flags.FLAGS
 
 # Where to find data
-tf.app.flags.DEFINE_string('data_path', '', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
-tf.app.flags.DEFINE_string('vocab_path', '', 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('data_path', '../cnn-dailymail/cnn/finished_lines/chunked/train_*', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
+tf.app.flags.DEFINE_string('vocab_path', '../cnn-dailymail/cnn/finished_lines/vocab', 'Path expression to text vocabulary file.')
 
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
 tf.app.flags.DEFINE_boolean('single_pass', False, 'For decode mode only. If True, run eval on the full dataset using a fixed checkpoint, i.e. take the current checkpoint, and use it to produce one summary for each example in the dataset, write the summaries to file and then get ROUGE scores for the whole dataset. If False (default), run concurrent decoding, i.e. repeatedly load latest checkpoint, use it to produce summaries for randomly-chosen examples and log the results to screen, indefinitely.')
 
 # Where to save output
-tf.app.flags.DEFINE_string('log_root', '', 'Root directory for all logging.')
-tf.app.flags.DEFINE_string('exp_name', '', 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
+tf.app.flags.DEFINE_string('log_root', 'log', 'Root directory for all logging.')
+tf.app.flags.DEFINE_string('exp_name', '190302', 'Name for experiment. Logs will be saved in a directory with this name, under log_root.')
 
 # Hyperparameters
 tf.app.flags.DEFINE_integer('hidden_dim', 256, 'dimension of RNN hidden states')
@@ -212,7 +212,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       train_step = results['global_step'] # we need this to update our running average loss
 
       summary_writer.add_summary(summaries, train_step) # write the summaries
-      if train_step % 100 == 0: # flush the summary writer every so often
+      if train_step % 10000 == 0: # flush the summary writer every so often
         summary_writer.flush()
 
 
@@ -227,7 +227,7 @@ def run_eval(model, batcher, vocab):
   running_avg_loss = 0 # the eval job keeps a smoother, running average loss to tell it when to implement early stopping
   best_loss = None  # will hold the best loss achieved so far
 
-  while True:
+  while batcher.next_batch():
     _ = util.load_ckpt(saver, sess) # load a new checkpoint
     batch = batcher.next_batch() # get the next batch
 
@@ -294,24 +294,28 @@ def main(unused_argv):
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
   hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'coverage', 'cov_loss_wt', 'pointer_gen']
   hps_dict = {}
-  for key,val in FLAGS.__flags.items(): # for each flag
+  for key in FLAGS.flag_values_dict(): # for each flag
     if key in hparam_list: # if it's in the list
-      hps_dict[key] = val # add it to the dict
+      hps_dict[key] = FLAGS[key].value # add it to the dict
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
 
-  # Create a batcher object that will create minibatches of data
-  batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass)
 
   tf.set_random_seed(111) # a seed value for randomness
 
   if hps.mode == 'train':
     print("creating model...")
+    # Create a batcher object that will create minibatches of data
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=True)
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode == 'eval':
+    # Create a batcher object that will create minibatches of data
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=False)
     model = SummarizationModel(hps, vocab)
     run_eval(model, batcher, vocab)
   elif hps.mode == 'decode':
+    # Create a batcher object that will create minibatches of data
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=False)
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
