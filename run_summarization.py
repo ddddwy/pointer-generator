@@ -310,7 +310,7 @@ def main(unused_argv):
   if hps.mode == 'train':
     print("creating model...")
     # Create a batcher object that will create minibatches of data
-    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=True)
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=False)
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
   elif hps.mode == 'eval':
@@ -320,7 +320,7 @@ def main(unused_argv):
     run_eval(model, batcher, vocab)
   elif hps.mode == 'decode':
     # Create a batcher object that will create minibatches of data
-    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=False)
+    batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=True)
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
