@@ -192,7 +192,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
     while True: # repeats until interrupted
       batch = batcher.next_batch()
 
-      tf.logging.info('running training step...')
+      tf.logging.info('running training step %d' % iters)
       t0=time.time()
       results = model.run_train_step(sess, batch)
       t1=time.time()
