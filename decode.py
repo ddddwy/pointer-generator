@@ -26,6 +26,7 @@ import pyrouge
 import util
 import logging
 import numpy as np
+import sys
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -251,3 +252,13 @@ def get_decode_dir_name(ckpt_name):
   if ckpt_name is not None:
     dirname += "_%s" % ckpt_name
   return dirname
+
+
+
+if __name__=="__main__":
+    decode_dir = sys.argv[1]
+    rouge_ref_dir = os.path.join(decode_dir, "reference")
+    rouge_dec_dir = os.path.join(decode_dir, "decoded")
+    
+    results_dict = rouge_eval(rouge_ref_dir, rouge_dec_dir)
+    rouge_log(results_dict, decode_dir)
