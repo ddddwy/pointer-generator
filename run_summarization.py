@@ -198,9 +198,8 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
           results = model.run_train_step(sess, batch)
           t1=time.time()
           tf.logging.info('seconds for training step: %.3f', t1-t0)
-
-      loss = results['loss']
-      tf.logging.info('loss: %f', loss) # print the loss to screen
+          loss = results['loss']
+          tf.logging.info('loss: %f', loss) # print the loss to screen
 
       if not np.isfinite(loss):
         raise Exception("Loss is not finite. Stopping.")
@@ -218,7 +217,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
         summary_writer.flush()
         
       iters += 1
-      if iters == 70000:
+      if iters == 100000:
         break
 
 
