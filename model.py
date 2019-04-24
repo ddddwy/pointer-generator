@@ -300,7 +300,10 @@ class SummarizationModel(object):
     tf.summary.scalar('global_norm', global_norm)
 
     # Apply adagrad optimizer
-    optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
+    if self._hps.optimizer == 'adam':
+        optimizer = tf.train.AdamOptimizer()
+    else:
+        optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
     with tf.device("/gpu:0"):
       self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 

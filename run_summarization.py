@@ -32,8 +32,8 @@ from tensorflow.python import debug as tf_debug
 FLAGS = tf.app.flags.FLAGS
 
 # Where to find data
-tf.app.flags.DEFINE_string('data_path', '../cnn-dailymail/cnn/finished_lines/chunked/train_*', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
-tf.app.flags.DEFINE_string('vocab_path', '../cnn-dailymail/cnn/finished_lines/vocab', 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('data_path', '../sumdata/sumdata/finished_files/chunked/train_*', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
+tf.app.flags.DEFINE_string('vocab_path', '../sumdata/sumdata/finished_files/vocab', 'Path expression to text vocabulary file.')
 
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
@@ -57,6 +57,7 @@ tf.app.flags.DEFINE_float('adagrad_init_acc', 0.1, 'initial accumulator value fo
 tf.app.flags.DEFINE_float('rand_unif_init_mag', 0.02, 'magnitude for lstm cells random uniform inititalization')
 tf.app.flags.DEFINE_float('trunc_norm_init_std', 1e-4, 'std of trunc norm init, used for initializing everything else')
 tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')
+tf.app.flags.DEFINE_string('optimizer', 'adagrad', 'default optimizer')
 
 # Pointer-generator or baseline model
 tf.app.flags.DEFINE_boolean('pointer_gen', True, 'If True, use pointer-generator model. If False, use baseline model.')
@@ -195,9 +196,8 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       loss = results['loss']
       
       # print to screen
-      if iters % 1000 == 0:
-          tf.logging.info('running training step %d' % iters)          
-          tf.logging.info('loss: %f', loss) 
+      tf.logging.info('running training step %d' % iters)          
+      tf.logging.info('loss: %f', loss) 
 
       if not np.isfinite(loss):
         raise Exception("Loss is not finite. Stopping.")
