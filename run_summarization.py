@@ -33,7 +33,7 @@ FLAGS = tf.app.flags.FLAGS
 
 # Where to find data
 tf.app.flags.DEFINE_string('data_path', '../cnn-dailymail/cnn/finished_lines/chunked/train_*', 'Path expression to tf.Example datafiles. Can include wildcards to access multiple datafiles.')
-tf.app.flags.DEFINE_string('vocab_path', '../cnn-dailymail/cnn/finished_lines/vocab', 'Path expression to text vocabulary file.')
+tf.app.flags.DEFINE_string('vocab_path', '../cnn-dailymail/cnn/finished_linesa/vocab', 'Path expression to text vocabulary file.')
 
 # Important settings
 tf.app.flags.DEFINE_string('mode', 'train', 'must be one of train/eval/decode')
@@ -295,7 +295,7 @@ def main(unused_argv):
     raise Exception("The single_pass flag should only be True in decode mode")
 
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
-  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'coverage', 'cov_loss_wt', 'pointer_gen']
+  hparam_list = ['mode', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'coverage', 'cov_loss_wt', 'pointer_gen', 'optimizer']
   hps_dict = {}
   for key in FLAGS.flag_values_dict(): # for each flag
     if key in hparam_list: # if it's in the list
