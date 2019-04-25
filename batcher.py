@@ -217,7 +217,7 @@ class Batch(object):
 class Batcher(object):
   """A class to generate minibatches of data. Buckets examples together based on length of the encoder sequence."""
 
-  BATCH_QUEUE_MAX = 100 # max number of batches the batch_queue can hold
+  BATCH_QUEUE_MAX = 10 # max number of batches the batch_queue can hold
 
   def __init__(self, data_path, vocab, hps, single_pass):
     """Initialize the batcher. Start threads that process the data into batches.
@@ -302,7 +302,7 @@ class Batcher(object):
         else:
           raise Exception("single_pass mode is off but the example generator is out of data; error.")
 
-      abstract_sentences = [sent.strip() for sent in data.abstract2sents(abstract)] # Use the <s> and </s> tags in abstract to get a list of sentences.
+      abstract_sentences = [abstract.strip()] # Use the <s> and </s> tags in abstract to get a list of sentences.
       example = Example(article, abstract_sentences, self._vocab, self._hps) # Process into an Example.
       self._example_queue.put(example) # place the Example in the example queue.
 
